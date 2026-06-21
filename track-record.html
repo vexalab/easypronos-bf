@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EasyPronos BF — Track Record</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e17;
+    --card: #111827;
+    --accent: #10b981;
+    --accent2: #f59e0b;
+    --text: #e5e7eb;
+    --muted: #6b7280;
+    --red: #ef4444;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+  .container { max-width: 480px; margin: 0 auto; }
+  .header { text-align: center; padding: 24px 0 32px; }
+  .logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 24px; font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .header h1 { font-size: 26px; margin-top: 12px; }
+  .header p { color: var(--muted); margin-top: 8px; font-size: 14px; }
+
+  .summary {
+    background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(245,158,11,0.1));
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 20px; padding: 32px 24px;
+    text-align: center; margin-bottom: 16px;
+  }
+  .summary .big {
+    font-family: 'Space Mono', monospace;
+    font-size: 64px; font-weight: 700; color: var(--accent);
+    line-height: 1;
+  }
+  .summary .label { color: var(--muted); margin-top: 8px; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; }
+  .summary .detail { margin-top: 16px; font-size: 18px; color: var(--text); }
+
+  .progress-bar {
+    height: 12px; background: rgba(255,255,255,0.08);
+    border-radius: 6px; overflow: hidden; margin-top: 20px;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 6px;
+  }
+
+  .section-title {
+    font-size: 18px; font-weight: 700; margin: 24px 0 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::before {
+    content: ''; width: 4px; height: 20px;
+    background: var(--accent); border-radius: 2px;
+  }
+
+  .day-card {
+    background: var(--card); border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 14px; padding: 16px 20px; margin-bottom: 10px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .day-date { font-size: 15px; font-weight: 500; }
+  .day-stats { display: flex; align-items: center; gap: 12px; }
+  .day-ratio { font-family: 'Space Mono', monospace; font-size: 16px; color: var(--muted); }
+  .day-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px; font-weight: 700;
+    padding: 4px 12px; border-radius: 20px;
+  }
+  .badge-high { background: rgba(16,185,129,0.15); color: var(--accent); }
+  .badge-mid { background: rgba(245,158,11,0.15); color: var(--accent2); }
+  .badge-low { background: rgba(239,68,68,0.15); color: var(--red); }
+
+  .footer {
+    text-align: center; padding: 32px 0 16px;
+    color: var(--muted); font-size: 13px;
+  }
+  .cta-btn {
+    display: block; margin: 24px 0;
+    padding: 16px; border-radius: 14px;
+    background: #25d366; color: white;
+    text-decoration: none; text-align: center;
+    font-weight: 700; font-size: 16px;
+  }
+  .updated { font-size: 12px; color: var(--muted); margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">EASYPRONOS BF</div>
+    <h1>Track Record Public</h1>
+    <p>Tous nos résultats, en toute transparence</p>
+  </div>
+
+  <div class="summary">
+    <div class="big" id="globalPct">71%</div>
+    <div class="label">Taux de réussite</div>
+    <div class="detail" id="globalRatio">12 / 17 pronostics gagnés</div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width: 71%"></div>
+    </div>
+  </div>
+
+  <a href="https://whatsapp.com/channel/0029Vb8JFTKCHDyqlaHE4Q0T" class="cta-btn">📲 Rejoindre gratuitement</a>
+
+  <h2 class="section-title">Historique jour par jour</h2>
+  <div id="daysList"></div>
+
+  <div class="footer">
+    🇧🇫 EasyPronos BF — Pronostics par IA<br>
+    <span class="updated" id="updated"></span>
+  </div>
+</div>
+
+<script>
+  // Données du track record (à mettre à jour depuis track_record.json)
+  const trackData = {
+    "total_wins": 12,
+    "total_bets": 17,
+    "pct_global": 71,
+    "daily": [
+      {"date": "2026-06-14", "wins": 3, "total": 4, "pct": 75},
+      {"date": "2026-06-15", "wins": 1, "total": 4, "pct": 25},
+      {"date": "2026-06-17", "wins": 2, "total": 2, "pct": 100},
+      {"date": "2026-06-18", "wins": 3, "total": 4, "pct": 75},
+      {"date": "2026-06-19", "wins": 1, "total": 1, "pct": 100},
+      {"date": "2026-06-20", "wins": 2, "total": 2, "pct": 100}
+    ],
+    "updated": "2026-06-21"
+  };
+
+  // Remplir le résumé
+  document.getElementById('globalPct').textContent = trackData.pct_global + '%';
+  document.getElementById('globalRatio').textContent = trackData.total_wins + ' / ' + trackData.total_bets + ' pronostics gagnés';
+  document.getElementById('progressFill').style.width = trackData.pct_global + '%';
+  document.getElementById('updated').textContent = 'Mis à jour le ' + trackData.updated;
+
+  // Remplir l'historique (du plus récent au plus ancien)
+  const daysList = document.getElementById('daysList');
+  const sortedDays = [...trackData.daily].reverse();
+
+  sortedDays.forEach(day => {
+    const dateObj = new Date(day.date);
+    const dateStr = dateObj.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long' });
+
+    let badgeClass = 'badge-low';
+    if (day.pct >= 75) badgeClass = 'badge-high';
+    else if (day.pct >= 50) badgeClass = 'badge-mid';
+
+    const card = document.createElement('div');
+    card.className = 'day-card';
+    card.innerHTML = `
+      <div class="day-date">${dateStr}</div>
+      <div class="day-stats">
+        <span class="day-ratio">${day.wins}/${day.total}</span>
+        <span class="day-badge ${badgeClass}">${day.pct}%</span>
+      </div>
+    `;
+    daysList.appendChild(card);
+  });
+</script>
+</body>
+</html>

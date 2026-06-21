@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EasyPronos - Affiche Match</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@700;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#000; font-family:'DM Sans',sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:0; }
+
+  .poster {
+    width:100%; max-width:420px; aspect-ratio:9/16;
+    background:linear-gradient(160deg,#0a0e17 0%,#162033 50%,#0a0e17 100%);
+    position:relative; overflow:hidden;
+    display:flex; flex-direction:column;
+  }
+  .poster::before {
+    content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:2px; height:100%; background:linear-gradient(180deg,transparent,rgba(245,158,11,0.3),transparent);
+    z-index:1;
+  }
+
+  .top-band {
+    padding:24px; text-align:center; position:relative; z-index:2;
+  }
+  .competition {
+    font-family:'Space Mono',monospace; font-size:13px; color:#f59e0b;
+    letter-spacing:3px; text-transform:uppercase;
+  }
+  .stage {
+    font-size:22px; font-weight:900; color:#fff; margin-top:4px;
+  }
+
+  .teams {
+    flex:1; display:flex; flex-direction:column; justify-content:center;
+    position:relative; z-index:2; padding:0 24px;
+  }
+  .team {
+    display:flex; flex-direction:column; align-items:center;
+    padding:20px 0;
+  }
+  .team-flag { font-size:72px; margin-bottom:12px; }
+  .team-name {
+    font-size:32px; font-weight:900; color:#fff; text-align:center;
+    text-transform:uppercase; letter-spacing:1px;
+  }
+  .team-elo {
+    font-family:'Space Mono',monospace; font-size:14px; color:#10b981;
+    margin-top:6px;
+  }
+
+  .vs-circle {
+    width:70px; height:70px; margin:0 auto;
+    background:linear-gradient(135deg,#f59e0b,#ef4444);
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:24px; font-weight:900; color:#fff;
+    box-shadow:0 0 30px rgba(245,158,11,0.4);
+    position:relative; z-index:3;
+  }
+
+  .prediction-band {
+    margin:0 24px 16px; padding:20px;
+    background:rgba(16,185,129,0.1); border:2px solid rgba(16,185,129,0.4);
+    border-radius:16px; text-align:center; position:relative; z-index:2;
+  }
+  .pred-label {
+    font-size:13px; color:#10b981; letter-spacing:2px; text-transform:uppercase;
+  }
+  .pred-value {
+    font-size:26px; font-weight:900; color:#fff; margin:6px 0;
+  }
+  .pred-conf {
+    font-family:'Space Mono',monospace; font-size:15px; color:#10b981;
+  }
+
+  .bottom-band {
+    padding:20px 24px; text-align:center; position:relative; z-index:2;
+    border-top:1px solid rgba(255,255,255,0.08);
+  }
+  .ai-tag {
+    font-size:15px; color:#f59e0b; font-weight:700; margin-bottom:8px;
+  }
+  .brand {
+    font-family:'Space Mono',monospace; font-size:16px;
+    background:linear-gradient(135deg,#10b981,#f59e0b);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    font-weight:700;
+  }
+  .handle { font-size:13px; color:#6b7280; margin-top:4px; }
+
+  .edit-panel {
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.97); z-index:100; overflow-y:auto;
+    display:flex; flex-direction:column; align-items:center; padding:20px; color:white;
+  }
+  .edit-panel.hidden { display:none; }
+  .edit-panel h2 { margin:16px 0; font-size:20px; text-align:center; }
+  .edit-panel input, .edit-panel select {
+    width:100%; max-width:360px; padding:12px; margin:5px 0;
+    border:1px solid #333; background:#111; color:white; border-radius:8px; font-size:15px;
+  }
+  .edit-panel label { width:100%; max-width:360px; margin-top:10px; font-size:13px; color:#888; }
+  .gen-btn { margin-top:20px; padding:16px 40px; background:#10b981; color:#000; border:none; border-radius:8px; font-size:17px; font-weight:900; cursor:pointer; }
+  .replay-btn { position:fixed; bottom:20px; right:20px; z-index:50; padding:12px 20px; background:rgba(0,0,0,0.7); color:#10b981; border:1px solid #10b981; border-radius:8px; font-size:14px; cursor:pointer; }
+  .hint { color:#666; font-size:13px; text-align:center; margin:8px 0; max-width:360px; }
+</style>
+</head>
+<body>
+
+<div class="edit-panel" id="editPanel">
+  <h2>🥊 Affiche Gros Match</h2>
+  <p class="hint">Pour les matchs importants (Round of 32, 8e, quarts, demis, finale). Remplis et génère.</p>
+
+  <label>Stade de la compétition</label>
+  <input type="text" id="stage" placeholder="Ex: 8e DE FINALE" value="ROUND OF 32">
+
+  <label>Équipe 1 (domicile)</label>
+  <input type="text" id="team1" placeholder="Ex: BRESIL" value="BRESIL">
+  <input type="text" id="flag1" placeholder="Emoji drapeau (ex: 🇧🇷)" value="🇧🇷">
+  <input type="text" id="elo1" placeholder="Elo (ex: 1979)" value="1979">
+
+  <label>Équipe 2 (extérieur)</label>
+  <input type="text" id="team2" placeholder="Ex: ALLEMAGNE" value="ALLEMAGNE">
+  <input type="text" id="flag2" placeholder="Emoji drapeau (ex: 🇩🇪)" value="🇩🇪">
+  <input type="text" id="elo2" placeholder="Elo (ex: 1910)" value="1910">
+
+  <label>Prédiction de l'IA</label>
+  <input type="text" id="prediction" placeholder="Ex: Bresil ou Nul" value="Bresil ou Nul">
+  <input type="text" id="confidence" placeholder="Ex: 72%" value="72%">
+
+  <button class="gen-btn" onclick="generate()">🎬 GÉNÉRER L'AFFICHE</button>
+</div>
+
+<div class="poster" id="poster" style="display:none;">
+  <div class="top-band">
+    <div class="competition">🏆 Coupe du Monde 2026</div>
+    <div class="stage" id="pStage"></div>
+  </div>
+
+  <div class="teams">
+    <div class="team">
+      <div class="team-flag" id="pFlag1"></div>
+      <div class="team-name" id="pTeam1"></div>
+      <div class="team-elo" id="pElo1"></div>
+    </div>
+
+    <div class="vs-circle">VS</div>
+
+    <div class="team">
+      <div class="team-flag" id="pFlag2"></div>
+      <div class="team-name" id="pTeam2"></div>
+      <div class="team-elo" id="pElo2"></div>
+    </div>
+  </div>
+
+  <div class="prediction-band">
+    <div class="pred-label">🤖 Prédiction IA</div>
+    <div class="pred-value" id="pPrediction"></div>
+    <div class="pred-conf" id="pConfidence"></div>
+  </div>
+
+  <div class="bottom-band">
+    <div class="brand">EASYPRONOS BF</div>
+    <div class="handle">@easypronos.bf — Lien WhatsApp en bio</div>
+  </div>
+</div>
+
+<button class="replay-btn" id="replayBtn" style="display:none;" onclick="location.reload()">↻ Recommencer</button>
+
+<script>
+function generate() {
+  document.getElementById('pStage').textContent = document.getElementById('stage').value;
+  document.getElementById('pFlag1').textContent = document.getElementById('flag1').value;
+  document.getElementById('pTeam1').textContent = document.getElementById('team1').value;
+  const elo1 = document.getElementById('elo1').value;
+  document.getElementById('pElo1').textContent = elo1 ? 'Elo ' + elo1 : '';
+  document.getElementById('pFlag2').textContent = document.getElementById('flag2').value;
+  document.getElementById('pTeam2').textContent = document.getElementById('team2').value;
+  const elo2 = document.getElementById('elo2').value;
+  document.getElementById('pElo2').textContent = elo2 ? 'Elo ' + elo2 : '';
+  document.getElementById('pPrediction').textContent = document.getElementById('prediction').value;
+  document.getElementById('pConfidence').textContent = 'Confiance : ' + document.getElementById('confidence').value;
+
+  document.getElementById('editPanel').classList.add('hidden');
+  document.getElementById('poster').style.display = 'flex';
+  document.getElementById('replayBtn').style.display = 'block';
+}
+</script>
+</body>
+</html>
